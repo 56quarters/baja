@@ -1,4 +1,4 @@
-package org.tshlabs.baja.client.internal;
+package org.tshlabs.baja.client.internal.commands;
 
 /**
  *

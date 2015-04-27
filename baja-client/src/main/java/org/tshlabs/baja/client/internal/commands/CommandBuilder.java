@@ -1,4 +1,4 @@
-package org.tshlabs.baja.client.internal;
+package org.tshlabs.baja.client.internal.commands;
 
 /**
  *
@@ -35,5 +35,12 @@ public class CommandBuilder {
     public CommandBuilder arg(boolean arg) {
         this.args.append(arg);
         return this;
+    }
+
+    public String build() {
+        if (args.length() == 0) {
+            return cmd.toRepr();
+        }
+        return cmd.toRepr() + " " + args.toString();
     }
 }
