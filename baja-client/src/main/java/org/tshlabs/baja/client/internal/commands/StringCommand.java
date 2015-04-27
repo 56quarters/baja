@@ -1,7 +1,5 @@
 package org.tshlabs.baja.client.internal.commands;
 
-import java.util.Locale;
-
 /**
  *
  */
@@ -32,6 +30,6 @@ public enum StringCommand implements Command {
 
     @Override
     public String toRepr() {
-        return name().toUpperCase(Locale.US);
+        return name();
     }
 }
