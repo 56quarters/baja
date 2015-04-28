@@ -127,14 +127,28 @@ public class RespParserTest {
     }
 
     @Test
-    public void testReadBulkString3() throws IOException {
+    public void testReadBulkStringEmpty() throws IOException {
         final InputStream inputStream = new ByteArrayInputStream("0\r\n".getBytes(CHARSET));
         assertEquals("", parser.readBulkString(inputStream));
     }
 
     @Test
-    public void testReadBulkString4() throws IOException {
+    public void testReadBulkStringNull() throws IOException {
         final InputStream inputStream = new ByteArrayInputStream("-1\r\n".getBytes(CHARSET));
         assertNull(parser.readBulkString(inputStream));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testReadBulkStringTooLong() throws IOException {
+        final long badLength = 1024 * 1024 * 1024;
+        final InputStream inputStream = new ByteArrayInputStream((badLength + "\r\nfoo\r\n").getBytes(CHARSET));
+        parser.readBulkString(inputStream);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testReadBulkStringShort() throws IOException {
+        final long badLength = 1024;
+        final InputStream inputStream = new ByteArrayInputStream((badLength + "\r\nfoo\r\n").getBytes(CHARSET));
+        parser.readBulkString(inputStream);
     }
 }

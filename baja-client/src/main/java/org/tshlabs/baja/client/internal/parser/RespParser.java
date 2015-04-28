@@ -4,9 +4,9 @@ package org.tshlabs.baja.client.internal.parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.Optional;
 
 /**
@@ -16,7 +16,9 @@ public class RespParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RespParser.class);
 
-    private static final Charset CHARSET = Charset.forName("utf8");
+    private static final int BULK_STRING_MAX_LEN = 1024 * 1024 * 512;
+
+    private static final String CHARSET = "UTF-8";
 
     private static final char CR = '\r';
 
@@ -55,8 +57,18 @@ public class RespParser {
             return null;
         }
 
-        final byte[] strBytes = new byte[(int) strLen];
-        final int read = stream.read(strBytes, 0, (int) strLen);
+        // The Redis protocol says the bulk strings won't be longer than
+        // 512M, so we check that here to make sure the length isn't something
+        // bigger than we can or should allocate.
+        if (strLen > BULK_STRING_MAX_LEN) {
+            throw new IllegalStateException(
+                    "Got unexpected length for bulk string " + strLen + " bytes");
+        }
+
+        // See if we can read the entire bulk string in one go into a single
+        // buffer. If there is enough data in the stream, we should get it.
+        final byte[] buffer = new byte[(int) strLen];
+        final int read = stream.read(buffer, 0, (int) strLen);
 
         if (read != strLen) {
             throw new IllegalStateException(
@@ -64,7 +76,7 @@ public class RespParser {
         }
 
         expectNewline(stream.read(), stream);
-        return new String(strBytes, CHARSET);
+        return new String(buffer, CHARSET);
     }
 
     // VisibleForTesting
@@ -85,20 +97,22 @@ public class RespParser {
 
     // VisibleForTesting
     String readLine(InputStream stream) throws IOException {
-        final StringBuilder sb = new StringBuilder();
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
         int res;
 
         while (true) {
             res = stream.read();
+            //ensureValidRes(res);
+
             if (CR == res) {
                 expectNewline(res, stream);
                 break;
             }
 
-            sb.append((char) res);
+            os.write(res);
         }
 
-        return sb.toString();
+        return os.toString(CHARSET);
     }
 
     // VisibleForTesting
@@ -112,5 +126,11 @@ public class RespParser {
         }
 
         throw new IllegalStateException("Expected newline (\\r or \\n), got " + c);
+    }
+
+    static void ensureValidRes(int c) {
+        if (c == -1) {
+            throw new IllegalStateException("Unexpected EOF reading stream");
+        }
     }
 }
