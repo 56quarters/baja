@@ -2,10 +2,7 @@ package org.tshlabs.baja.client.internal.operations;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tshlabs.baja.client.internal.commands.StringCommand;
 import org.tshlabs.baja.client.operations.StringOperations;
-
-import static org.tshlabs.baja.client.internal.commands.CommandBuilder.command;
 
 /**
  *
@@ -35,8 +32,6 @@ public class StringOperationsImpl implements StringOperations {
 
     @Override
     public String get(String key) {
-        String cmd = command(StringCommand.GET).arg(key).build();
-        LOGGER.info(cmd);
         return null;
     }
 
