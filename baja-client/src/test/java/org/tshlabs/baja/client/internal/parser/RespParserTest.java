@@ -10,9 +10,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 
@@ -150,5 +150,97 @@ public class RespParserTest {
         final long badLength = 1024;
         final InputStream inputStream = new ByteArrayInputStream((badLength + "\r\nfoo\r\n").getBytes(CHARSET));
         parser.readBulkString(inputStream);
+    }
+
+    @Test
+    public void testReadArrayEmpty() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream("0\r\n".getBytes(CHARSET));
+        final List<Object> res = parser.readArray(inputStream);
+        assertTrue(res.isEmpty());
+    }
+
+    @Test
+    public void testReadArrayNull() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream("-1\r\n".getBytes(CHARSET));
+        final List<Object> res = parser.readArray(inputStream);
+        assertNull(res);
+    }
+
+    @Test
+    public void testReadArrayTwoStrings() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream(
+                "2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n".getBytes(CHARSET));
+        final List<Object> res = parser.readArray(inputStream);
+
+        assertEquals(2, res.size());
+        assertEquals("foo", res.get(0));
+        assertEquals("bar", res.get(1));
+    }
+
+    @Test
+    public void testReadArrayThreeIntegers() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream(
+                "3\r\n:1\r\n:2\r\n:3\r\n".getBytes(CHARSET));
+        final List<Object> res = parser.readArray(inputStream);
+
+        assertEquals(3, res.size());
+        assertEquals(1L, res.get(0));
+        assertEquals(2L, res.get(1));
+        assertEquals(3L, res.get(2));
+    }
+
+    @Test
+    public void testReadArrayFourIntegersOneString() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream(
+                "5\r\n:1\r\n:2\r\n:3\r\n:4\r\n$6\r\nfoobar\r\n".getBytes(CHARSET));
+        final List<Object> res = parser.readArray(inputStream);
+
+        assertEquals(5, res.size());
+        assertEquals(1L, res.get(0));
+        assertEquals(2L, res.get(1));
+        assertEquals(3L, res.get(2));
+        assertEquals(4L, res.get(3));
+        assertEquals("foobar", res.get(4));
+    }
+
+    @Test
+    public void testReadArrayOfTwoArrays() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream(
+                "2\r\n*3\r\n:1\r\n:2\r\n:3\r\n*2\r\n+foo\r\n-bar\r\n".getBytes(CHARSET));
+        final List<Object> res = parser.readArray(inputStream);
+
+        assertEquals(2, res.size());
+
+        final Object arr1 = res.get(0);
+        final Object arr2 = res.get(1);
+
+        assertTrue(List.class.isAssignableFrom(arr1.getClass()));
+        assertTrue(List.class.isAssignableFrom(arr2.getClass()));
+
+        final List<Object> arr1List = (List<Object>) arr1;
+        final List<Object> arr2List = (List<Object>) arr2;
+
+        assertEquals(3, arr1List.size());
+        assertEquals(1L, arr1List.get(0));
+        assertEquals(2L, arr1List.get(1));
+        assertEquals(3L, arr1List.get(2));
+
+        assertEquals(2, arr2List.size());
+        assertEquals("foo", arr2List.get(0));
+
+        final RespErrResponse err = (RespErrResponse) arr2List.get(1);
+        assertEquals("bar", err.getMessage());
+    }
+
+    @Test
+    public void testReadArrayNullEntry() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream(
+                "3\r\n$3\r\nfoo\r\n$-1\r\n$3\r\nbar\r\n".getBytes(CHARSET));
+        final List<Object> res = parser.readArray(inputStream);
+
+        assertEquals(3, res.size());
+        assertEquals("foo", res.get(0));
+        assertNull(res.get(1));
+        assertEquals("bar", res.get(2));
     }
 }

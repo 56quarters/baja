@@ -1,12 +1,11 @@
 package org.tshlabs.baja.client.internal.parser;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,15 +13,23 @@ import java.util.Optional;
  */
 public class RespParser {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RespParser.class);
-
     private static final int BULK_STRING_MAX_LEN = 1024 * 1024 * 512;
 
-    private static final String CHARSET = "UTF-8";
+    private static final String DEFAULT_CHARSET = "UTF-8";
 
     private static final char CR = '\r';
 
     private static final char NL = '\n';
+
+    private final String charset;
+
+    public RespParser() {
+        this.charset = DEFAULT_CHARSET;
+    }
+
+    public RespParser(String charset) {
+        this.charset = charset;
+    }
 
     // VisibleForTesting
     RespType findType(InputStream stream) throws IOException {
@@ -31,19 +38,50 @@ public class RespParser {
             throw new IllegalStateException("Stream end already reached");
         }
 
-        // cast is safe since we already know it's between 0 and 255.
-        final char charType = (char) type;
-        final Optional<RespType> dataType = RespType.fromChar(charType);
+        final Optional<RespType> dataType = RespType.fromChar(type);
         if (!dataType.isPresent()) {
-            throw new IllegalArgumentException("Could not parse invalid type " + charType);
+            throw new IllegalArgumentException("Could not parse invalid type " + type);
         }
 
         return dataType.get();
     }
 
     // VisibleForTesting
-    String readArray(InputStream stream) {
-        return null;
+    List<Object> readArray(InputStream stream) throws IOException {
+        final long arraySize = readInteger(stream);
+        final List<Object> out = new ArrayList<>();
+
+        if (arraySize == 0) { // special case empty array
+            return out;
+        }
+
+        if (arraySize < 0) { // special case null array
+            return null;
+        }
+
+        for (long i = 0; i < arraySize; i++) {
+            final RespType type = findType(stream);
+
+            switch (type) {
+                case ARRAY:
+                    out.add(readArray(stream));
+                    break;
+                case BULK_STRING:
+                    out.add(readBulkString(stream));
+                    break;
+                case ERROR:
+                    out.add(readError(stream));
+                    break;
+                case INTEGER:
+                    out.add(readInteger(stream));
+                    break;
+                case SIMPLE_STRING:
+                    out.add(readSimpleString(stream));
+                    break;
+            }
+        }
+
+        return out;
     }
 
     // VisibleForTesting
@@ -76,17 +114,19 @@ public class RespParser {
         }
 
         expectNewline(stream.read(), stream);
-        return new String(buffer, CHARSET);
+        return new String(buffer, charset);
     }
 
     // VisibleForTesting
-    String readError(InputStream stream) throws IOException {
-        // ???
-        return null;
+    RespErrResponse readError(InputStream stream) throws IOException {
+        return new RespErrResponse(readLine(stream));
     }
 
     // VisibleForTesting
     long readInteger(InputStream stream) throws IOException {
+        // REdis Serialization Protocol (RESP) specifies that integer types
+        // are 64bit which is a long in Java, so we use a long here but
+        // call it an integer. Maybe this is dumb.
         return Long.parseLong(readLine(stream));
     }
 
@@ -102,8 +142,6 @@ public class RespParser {
 
         while (true) {
             res = stream.read();
-            //ensureValidRes(res);
-
             if (CR == res) {
                 expectNewline(res, stream);
                 break;
@@ -112,7 +150,7 @@ public class RespParser {
             os.write(res);
         }
 
-        return os.toString(CHARSET);
+        return os.toString(charset);
     }
 
     // VisibleForTesting
@@ -126,11 +164,5 @@ public class RespParser {
         }
 
         throw new IllegalStateException("Expected newline (\\r or \\n), got " + c);
-    }
-
-    static void ensureValidRes(int c) {
-        if (c == -1) {
-            throw new IllegalStateException("Unexpected EOF reading stream");
-        }
     }
 }

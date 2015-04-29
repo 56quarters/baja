@@ -15,10 +15,10 @@ public enum RespType {
     INTEGER(':'),
     SIMPLE_STRING('+');
 
-    private static final Map<Character, RespType> LOOKUP;
+    private static final Map<Integer, RespType> LOOKUP;
 
     static {
-        Map<Character, RespType> types = new HashMap<>();
+        Map<Integer, RespType> types = new HashMap<>();
         for (RespType type : values()) {
             types.put(type.getToken(), type);
         }
@@ -26,17 +26,17 @@ public enum RespType {
         LOOKUP = Collections.unmodifiableMap(types);
     }
 
-    private final char token;
+    private final int token;
 
-    RespType(char token) {
+    RespType(int token) {
         this.token = token;
     }
 
-    public char getToken() {
+    public int getToken() {
         return token;
     }
 
-    public static Optional<RespType> fromChar(char token) {
+    public static Optional<RespType> fromChar(int token) {
         return Optional.ofNullable(LOOKUP.get(token));
     }
 }
