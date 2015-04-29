@@ -1,9 +1,10 @@
-package org.tshlabs.baja.client.internal.parser;
+package org.tshlabs.baja.client.internal.protocol;
 
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,19 +16,19 @@ public class RespParser {
 
     private static final int BULK_STRING_MAX_LEN = 1024 * 1024 * 512;
 
-    private static final String DEFAULT_CHARSET = "UTF-8";
+    private static final Charset DEFAULT_CHARSET = Charset.forName("utf8");
 
     private static final char CR = '\r';
 
     private static final char NL = '\n';
 
-    private final String charset;
+    private final Charset charset;
 
     public RespParser() {
         this.charset = DEFAULT_CHARSET;
     }
 
-    public RespParser(String charset) {
+    public RespParser(Charset charset) {
         this.charset = charset;
     }
 
@@ -150,7 +151,7 @@ public class RespParser {
             os.write(res);
         }
 
-        return os.toString(charset);
+        return os.toString(charset.name());
     }
 
     // VisibleForTesting

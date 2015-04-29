@@ -1,4 +1,4 @@
-package org.tshlabs.baja.client.internal.parser;
+package org.tshlabs.baja.client.internal.protocol;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,65 +28,53 @@ public class RespParserTest {
 
     @Before
     public void setup() {
-        this.parser = new RespParser();
+        this.parser = new RespParser(CHARSET);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testFindTypeEndOfStream() throws IOException {
         when(inputStream.read()).thenReturn(-1);
-
         parser.findType(inputStream);
     }
 
     @Test
     public void testFindTypeArrayType() throws IOException {
         when(inputStream.read()).thenReturn((int) '*');
-
         final RespType type = parser.findType(inputStream);
-
         assertEquals(RespType.ARRAY, type);
     }
 
     @Test
     public void testFindTypeBulkStringType() throws IOException {
         when(inputStream.read()).thenReturn((int) '$');
-
         final RespType type = parser.findType(inputStream);
-
         assertEquals(RespType.BULK_STRING, type);
     }
 
     @Test
     public void testFindTypeErrorType() throws IOException {
         when(inputStream.read()).thenReturn((int) '-');
-
         final RespType type = parser.findType(inputStream);
-
         assertEquals(RespType.ERROR, type);
     }
 
     @Test
     public void testFindTypeIntegerType() throws IOException {
         when(inputStream.read()).thenReturn((int) ':');
-
         final RespType type = parser.findType(inputStream);
-
         assertEquals(RespType.INTEGER, type);
     }
 
     @Test
     public void testFindTypeSimpleStringType() throws IOException {
         when(inputStream.read()).thenReturn((int) '+');
-
         final RespType type = parser.findType(inputStream);
-
         assertEquals(RespType.SIMPLE_STRING, type);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testFindTypeInvalid() throws IOException {
         when(inputStream.read()).thenReturn((int) '#');
-
         parser.findType(inputStream);
     }
 
@@ -242,5 +230,23 @@ public class RespParserTest {
         assertEquals("foo", res.get(0));
         assertNull(res.get(1));
         assertEquals("bar", res.get(2));
+    }
+
+    @Test
+    public void testExpectNewlineValid() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream("\r\n".getBytes(CHARSET));
+        assertTrue(RespParser.expectNewline(inputStream.read(), inputStream));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testExpectNewlineInvalidFirst() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream("\0".getBytes(CHARSET));
+        RespParser.expectNewline(inputStream.read(), inputStream);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testExpectNewlineInvalidSecond() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream("\r\0".getBytes(CHARSET));
+        RespParser.expectNewline(inputStream.read(), inputStream);
     }
 }

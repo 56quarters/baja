@@ -1,4 +1,4 @@
-package org.tshlabs.baja.client.internal.parser;
+package org.tshlabs.baja.client.internal.protocol;
 
 import java.util.Collections;
 import java.util.HashMap;
