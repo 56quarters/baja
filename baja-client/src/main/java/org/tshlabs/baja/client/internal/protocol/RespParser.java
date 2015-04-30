@@ -16,30 +16,23 @@ public class RespParser {
 
     private static final int BULK_STRING_MAX_LEN = 1024 * 1024 * 512;
 
-    private static final Charset DEFAULT_CHARSET = Charset.forName("utf8");
-
     private static final char CR = '\r';
 
     private static final char NL = '\n';
 
-    private final Charset charset;
+    private final Charset payloadCharset;
 
-    public RespParser() {
-        this.charset = DEFAULT_CHARSET;
+    public RespParser(Charset payloadCharset) {
+        this.payloadCharset = payloadCharset;
     }
 
-    public RespParser(Charset charset) {
-        this.charset = charset;
-    }
-
-    // VisibleForTesting
-    RespType findType(InputStream stream) throws IOException {
+    public RespType findType(InputStream stream) throws IOException {
         final int type = stream.read();
         if (type == -1) {
             throw new IllegalStateException("Stream end already reached");
         }
 
-        final Optional<RespType> dataType = RespType.fromChar(type);
+        final Optional<RespType> dataType = RespType.lookup(type);
         if (!dataType.isPresent()) {
             throw new IllegalArgumentException("Could not parse invalid type " + type);
         }
@@ -47,8 +40,7 @@ public class RespParser {
         return dataType.get();
     }
 
-    // VisibleForTesting
-    List<Object> readArray(InputStream stream) throws IOException {
+    public List<Object> readArray(InputStream stream) throws IOException {
         final long arraySize = readInteger(stream);
         final List<Object> out = new ArrayList<>();
 
@@ -85,8 +77,7 @@ public class RespParser {
         return out;
     }
 
-    // VisibleForTesting
-    String readBulkString(InputStream stream) throws IOException {
+    public String readBulkString(InputStream stream) throws IOException {
         final long strLen = readInteger(stream);
         if (strLen == 0) { // special case empty string
             return "";
@@ -115,24 +106,21 @@ public class RespParser {
         }
 
         expectNewline(stream.read(), stream);
-        return new String(buffer, charset);
+        return new String(buffer, payloadCharset);
     }
 
-    // VisibleForTesting
-    RespErrResponse readError(InputStream stream) throws IOException {
+    public RespErrResponse readError(InputStream stream) throws IOException {
         return new RespErrResponse(readLine(stream));
     }
 
-    // VisibleForTesting
-    long readInteger(InputStream stream) throws IOException {
+    public long readInteger(InputStream stream) throws IOException {
         // REdis Serialization Protocol (RESP) specifies that integer types
         // are 64bit which is a long in Java, so we use a long here but
         // call it an integer. Maybe this is dumb.
         return Long.parseLong(readLine(stream));
     }
 
-    // VisibleForTesting
-    String readSimpleString(InputStream stream) throws IOException {
+    public String readSimpleString(InputStream stream) throws IOException {
         return readLine(stream);
     }
 
@@ -151,7 +139,7 @@ public class RespParser {
             os.write(res);
         }
 
-        return os.toString(charset.name());
+        return os.toString(RespEncodings.PROTOCOL.name());
     }
 
     // VisibleForTesting

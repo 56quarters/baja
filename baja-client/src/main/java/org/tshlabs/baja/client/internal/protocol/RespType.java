@@ -9,35 +9,54 @@ import java.util.Optional;
  *
  */
 public enum RespType {
-    ARRAY('*'),
-    BULK_STRING('$'),
-    ERROR('-'),
-    INTEGER(':'),
-    SIMPLE_STRING('+');
+    ARRAY("*"),
+    BULK_STRING("$"),
+    ERROR("-"),
+    INTEGER(":"),
+    SIMPLE_STRING("+");
 
-    private static final Map<Integer, RespType> LOOKUP;
+    private static final Map<Integer, RespType> BYTE_LOOKUP;
+
+    private static final Map<String, RespType> STRING_LOOKUP;
 
     static {
-        Map<Integer, RespType> types = new HashMap<>();
+        final Map<Integer, RespType> byteTypes = new HashMap<>();
         for (RespType type : values()) {
-            types.put(type.getToken(), type);
+            byteTypes.put(type.getByte(), type);
         }
 
-        LOOKUP = Collections.unmodifiableMap(types);
+        BYTE_LOOKUP = Collections.unmodifiableMap(byteTypes);
+
+        final Map<String, RespType> stringTypes = new HashMap<>();
+        for (RespType type : values()) {
+            stringTypes.put(type.getString(), type);
+        }
+
+        STRING_LOOKUP = Collections.unmodifiableMap(stringTypes);
     }
 
     private final int token;
+    private final String tokenString;
 
-    RespType(int token) {
-        this.token = token;
+    RespType(String tokenString) {
+        this.token = tokenString.getBytes(RespEncodings.PROTOCOL)[0];
+        this.tokenString = tokenString;
     }
 
-    public int getToken() {
+    public int getByte() {
         return token;
     }
 
-    public static Optional<RespType> fromChar(int token) {
-        return Optional.ofNullable(LOOKUP.get(token));
+    public String getString() {
+        return tokenString;
+    }
+
+    public static Optional<RespType> lookup(int token) {
+        return Optional.ofNullable(BYTE_LOOKUP.get(token));
+    }
+
+    public static Optional<RespType> lookup(String token) {
+        return Optional.ofNullable(STRING_LOOKUP.get(token));
     }
 }
 

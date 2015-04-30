@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -19,7 +20,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class RespParserTest {
 
-    private static final Charset CHARSET = Charset.forName("utf8");
+    private static final Charset CHARSET = StandardCharsets.UTF_8;
 
     @Mock
     private InputStream inputStream;
@@ -88,6 +89,31 @@ public class RespParserTest {
     public void testReadSimpleString2() throws IOException {
         final InputStream inputStream = new ByteArrayInputStream("BLAH\r\n".getBytes(CHARSET));
         assertEquals("BLAH", parser.readSimpleString(inputStream));
+    }
+
+    @Test
+    public void testReadSimpleString3() throws IOException {
+        // Make sure we don't mangle non-ascii stuff since Redis will include
+        // it in simple string responses or errors (if you tried to use it as
+        // the name of a command, for example).
+        final InputStream inputStream = new ByteArrayInputStream("ئ\r\n".getBytes(CHARSET));
+        assertEquals("ئ", parser.readSimpleString(inputStream));
+    }
+
+    @Test
+    public void testReadError1() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream(
+                "ERR value is not an integer or out of range\r\n".getBytes(CHARSET));
+        final RespErrResponse err = parser.readError(inputStream);
+        assertEquals("ERR value is not an integer or out of range", err.getMessage());
+    }
+
+    @Test
+    public void testReadError2() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream(
+                "ERR unknown command 'ئ'\r\n".getBytes(CHARSET));
+        final RespErrResponse err = parser.readError(inputStream);
+        assertEquals("ERR unknown command 'ئ'", err.getMessage());
     }
 
     @Test
