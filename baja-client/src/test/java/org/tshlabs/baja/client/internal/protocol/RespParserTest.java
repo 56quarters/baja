@@ -3,7 +3,6 @@ package org.tshlabs.baja.client.internal.protocol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
@@ -14,16 +13,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
 public class RespParserTest {
 
     private static final Charset CHARSET = StandardCharsets.UTF_8;
-
-    @Mock
-    private InputStream inputStream;
 
     private RespParser parser;
 
@@ -34,48 +29,49 @@ public class RespParserTest {
 
     @Test(expected = IllegalStateException.class)
     public void testFindTypeEndOfStream() throws IOException {
-        when(inputStream.read()).thenReturn(-1);
+        final InputStream inputStream = new ByteArrayInputStream(new byte[]{});
         parser.findType(inputStream);
     }
 
     @Test
     public void testFindTypeArrayType() throws IOException {
-        when(inputStream.read()).thenReturn((int) '*');
+        final InputStream inputStream = new ByteArrayInputStream(new byte[]{'*'});
         final RespType type = parser.findType(inputStream);
         assertEquals(RespType.ARRAY, type);
     }
 
     @Test
     public void testFindTypeBulkStringType() throws IOException {
-        when(inputStream.read()).thenReturn((int) '$');
+        final InputStream inputStream = new ByteArrayInputStream(new byte[]{'$'});
         final RespType type = parser.findType(inputStream);
         assertEquals(RespType.BULK_STRING, type);
     }
 
     @Test
     public void testFindTypeErrorType() throws IOException {
-        when(inputStream.read()).thenReturn((int) '-');
+        final InputStream inputStream = new ByteArrayInputStream(new byte[]{'-'});
+
         final RespType type = parser.findType(inputStream);
         assertEquals(RespType.ERROR, type);
     }
 
     @Test
     public void testFindTypeIntegerType() throws IOException {
-        when(inputStream.read()).thenReturn((int) ':');
+        final InputStream inputStream = new ByteArrayInputStream(new byte[]{':'});
         final RespType type = parser.findType(inputStream);
         assertEquals(RespType.INTEGER, type);
     }
 
     @Test
     public void testFindTypeSimpleStringType() throws IOException {
-        when(inputStream.read()).thenReturn((int) '+');
+        final InputStream inputStream = new ByteArrayInputStream(new byte[]{'+'});
         final RespType type = parser.findType(inputStream);
         assertEquals(RespType.SIMPLE_STRING, type);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testFindTypeInvalid() throws IOException {
-        when(inputStream.read()).thenReturn((int) '#');
+        final InputStream inputStream = new ByteArrayInputStream(new byte[]{'#'});
         parser.findType(inputStream);
     }
 
@@ -274,5 +270,17 @@ public class RespParserTest {
     public void testExpectNewlineInvalidSecond() throws IOException {
         final InputStream inputStream = new ByteArrayInputStream("\r\0".getBytes(CHARSET));
         RespParser.expectNewline(inputStream.read(), inputStream);
+    }
+
+    @Test
+    public void testReadLineValid() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream("foo\r\n".getBytes(CHARSET));
+        assertEquals("foo", RespParser.readLine(inputStream));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testReadLineEof() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream(new byte[]{});
+        RespParser.readLine(inputStream);
     }
 }

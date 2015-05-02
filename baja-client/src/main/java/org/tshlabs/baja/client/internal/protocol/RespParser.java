@@ -114,7 +114,7 @@ public class RespParser {
     }
 
     public long readInteger(InputStream stream) throws IOException {
-        // REdis Serialization Protocol (RESP) specifies that integer types
+        // Redis Serialization Protocol (RESP) specifies that integer types
         // are 64bit which is a long in Java, so we use a long here but
         // call it an integer. Maybe this is dumb.
         return Long.parseLong(readLine(stream));
@@ -125,12 +125,14 @@ public class RespParser {
     }
 
     // VisibleForTesting
-    String readLine(InputStream stream) throws IOException {
+    static String readLine(InputStream stream) throws IOException {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         int res;
 
         while (true) {
             res = stream.read();
+            verifyNoEof(res);
+
             if (CR == res) {
                 expectNewline(res, stream);
                 break;
@@ -140,6 +142,13 @@ public class RespParser {
         }
 
         return os.toString(RespEncodings.PROTOCOL.name());
+    }
+
+
+    private static void verifyNoEof(int c) {
+        if (c == -1) {
+            throw new IllegalStateException("Unexpected EOF reading stream");
+        }
     }
 
     // VisibleForTesting
