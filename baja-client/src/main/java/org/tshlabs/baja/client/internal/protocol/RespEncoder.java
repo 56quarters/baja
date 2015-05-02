@@ -34,7 +34,7 @@ public class RespEncoder {
         return out.toByteArray();
     }
 
-    private void quietWrite(ByteArrayOutputStream stream, byte[] bytes) {
+    private static void quietWrite(ByteArrayOutputStream stream, byte[] bytes) {
         try {
             stream.write(bytes);
         } catch (IOException e) {
