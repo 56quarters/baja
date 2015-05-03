@@ -227,8 +227,8 @@ public class RespParserTest {
         assertTrue(List.class.isAssignableFrom(arr1.getClass()));
         assertTrue(List.class.isAssignableFrom(arr2.getClass()));
 
-        final List<Object> arr1List = (List<Object>) arr1;
-        final List<Object> arr2List = (List<Object>) arr2;
+        @SuppressWarnings("unchecked") final List<Object> arr1List = (List<Object>) arr1;
+        @SuppressWarnings("unchecked") final List<Object> arr2List = (List<Object>) arr2;
 
         assertEquals(3, arr1List.size());
         assertEquals(1L, arr1List.get(0));
