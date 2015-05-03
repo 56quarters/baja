@@ -27,10 +27,7 @@ public class RespParser {
     }
 
     public RespType findType(InputStream stream) throws IOException {
-        final int type = stream.read();
-        if (type == -1) {
-            throw new IllegalStateException("Stream end already reached");
-        }
+        final int type = verifyNoEof(stream.read());
 
         final Optional<RespType> dataType = RespType.lookup(type);
         if (!dataType.isPresent()) {
@@ -130,8 +127,7 @@ public class RespParser {
         int res;
 
         while (true) {
-            res = stream.read();
-            verifyNoEof(res);
+            res = verifyNoEof(stream.read());
 
             if (CR == res) {
                 expectNewline(res, stream);
@@ -145,16 +141,18 @@ public class RespParser {
     }
 
 
-    private static void verifyNoEof(int c) {
+    private static int verifyNoEof(int c) {
         if (c == -1) {
             throw new IllegalStateException("Unexpected EOF reading stream");
         }
+
+        return c;
     }
 
     // VisibleForTesting
     static boolean expectNewline(int c, InputStream stream) throws IOException {
         if (CR == c) {
-            return expectNewline(stream.read(), stream);
+            return expectNewline(verifyNoEof(stream.read()), stream);
         }
 
         if (NL == c) {
