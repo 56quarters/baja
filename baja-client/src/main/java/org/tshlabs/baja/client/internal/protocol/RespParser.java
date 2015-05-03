@@ -129,8 +129,7 @@ public class RespParser {
         while (true) {
             res = verifyNoEof(stream.read());
 
-            if (CR == res) {
-                expectNewline(res, stream);
+            if (CR == res && expectNewline(res, stream)) {
                 break;
             }
 
