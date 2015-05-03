@@ -1,16 +1,24 @@
 package org.tshlabs.baja.client.internal.commands;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
+ *
+ *
+ *
  *
  */
 public class CommandBuilder {
 
-    private final Command cmd;
-
-    private final StringBuilder args = new StringBuilder();
+    private final List<String> args = new ArrayList<>();
 
     private CommandBuilder(Command cmd) {
-        this.cmd = cmd;
+        if (cmd == null) {
+            throw new NullPointerException();
+        }
+
+        this.args.add(cmd.toRepr());
     }
 
     public static CommandBuilder command(Command cmd) {
@@ -18,29 +26,27 @@ public class CommandBuilder {
     }
 
     public CommandBuilder arg(String arg) {
-        this.args.append(arg);
+        this.args.add(arg);
         return this;
     }
 
     public CommandBuilder arg(int arg) {
-        this.args.append(arg);
+        this.args.add(String.valueOf(arg));
         return this;
     }
 
     public CommandBuilder arg(long arg) {
-        this.args.append(arg);
+        this.args.add(String.valueOf(arg));
         return this;
     }
 
     public CommandBuilder arg(boolean arg) {
-        this.args.append(arg);
+        // Redis doesn't really have boolean types so we use 1 or 0
+        this.args.add((arg ? "1" : "0"));
         return this;
     }
 
-    public String build() {
-        if (args.length() == 0) {
-            return cmd.toRepr();
-        }
-        return cmd.toRepr() + " " + args.toString();
+    public List<String> build() {
+        return new ArrayList<>(args);
     }
 }
