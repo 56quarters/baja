@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.tshlabs.baja.client.internal.BajaUtils.checkNotNull;
+
 /**
  *
  */
@@ -18,15 +20,16 @@ public class RespParser {
 
     private static final char CR = '\r';
 
-    private static final char NL = '\n';
+    private static final char LF = '\n';
 
     private final Charset payloadCharset;
 
     public RespParser(Charset payloadCharset) {
-        this.payloadCharset = payloadCharset;
+        this.payloadCharset = checkNotNull(payloadCharset);
     }
 
     public RespType findType(InputStream stream) throws IOException {
+        checkNotNull(stream);
         final int type = verifyNoEof(stream.read());
 
         final Optional<RespType> dataType = RespType.lookup(type);
@@ -38,6 +41,7 @@ public class RespParser {
     }
 
     public List<Object> readArray(InputStream stream) throws IOException {
+        checkNotNull(stream);
         final long arraySize = readInteger(stream);
         final List<Object> out = new ArrayList<>();
 
@@ -75,6 +79,7 @@ public class RespParser {
     }
 
     public String readBulkString(InputStream stream) throws IOException {
+        checkNotNull(stream);
         final long strLen = readInteger(stream);
         if (strLen == 0) { // special case empty string
             return "";
@@ -107,10 +112,12 @@ public class RespParser {
     }
 
     public RespErrResponse readError(InputStream stream) throws IOException {
+        checkNotNull(stream);
         return new RespErrResponse(readLine(stream));
     }
 
     public long readInteger(InputStream stream) throws IOException {
+        checkNotNull(stream);
         // Redis Serialization Protocol (RESP) specifies that integer types
         // are 64bit which is a long in Java, so we use a long here but
         // call it an integer. Maybe this is dumb.
@@ -118,6 +125,7 @@ public class RespParser {
     }
 
     public String readSimpleString(InputStream stream) throws IOException {
+        checkNotNull(stream);
         return readLine(stream);
     }
 
@@ -154,7 +162,7 @@ public class RespParser {
             return expectNewline(verifyNoEof(stream.read()), stream);
         }
 
-        if (NL == c) {
+        if (LF == c) {
             return true;
         }
 

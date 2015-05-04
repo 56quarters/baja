@@ -3,6 +3,8 @@ package org.tshlabs.baja.client.internal.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.tshlabs.baja.client.internal.BajaUtils.checkNotNull;
+
 /**
  *
  *
@@ -14,9 +16,7 @@ public class CommandBuilder {
     private final List<String> args = new ArrayList<>();
 
     private CommandBuilder(Command cmd) {
-        if (cmd == null) {
-            throw new NullPointerException();
-        }
+        checkNotNull(cmd);
 
         this.args.add(cmd.toRepr());
     }
