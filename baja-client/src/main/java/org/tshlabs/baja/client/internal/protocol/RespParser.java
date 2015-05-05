@@ -100,14 +100,14 @@ public class RespParser {
         // See if we can read the entire bulk string in one go into a single
         // buffer. If there is enough data in the stream, we should get it.
         final byte[] buffer = new byte[(int) strLen];
-        final int read = stream.read(buffer, 0, (int) strLen);
+        final int read = verifyNoEof(stream.read(buffer, 0, (int) strLen));
 
         if (read != strLen) {
             throw new IllegalStateException(
                     "Expected to read " + strLen + " bytes, got " + read);
         }
 
-        expectNewline(stream.read(), stream);
+        expectNewline(verifyNoEof(stream.read()), stream);
         return new String(buffer, payloadCharset);
     }
 
@@ -129,6 +129,10 @@ public class RespParser {
         return readLine(stream);
     }
 
+    /**
+     * Read the {@link InputStream} until encountering a {@code \r\n} and return
+     * the results as a UTF-8 encoded string, not including the {@code \r\n}.
+     */
     // VisibleForTesting
     static String readLine(InputStream stream) throws IOException {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -148,7 +152,12 @@ public class RespParser {
     }
 
 
-    private static int verifyNoEof(int c) {
+    /**
+     * Raise an error if the given {@code int} indicates that we have reached
+     * the end of the stream (return value of {@code -1}), return the given int
+     * otherwise.
+     */
+    static int verifyNoEof(int c) {
         if (c == -1) {
             throw new IllegalStateException("Unexpected EOF reading stream");
         }
@@ -156,16 +165,28 @@ public class RespParser {
         return c;
     }
 
+    /**
+     * Verify that the CR and LF characters occur one after the other in the
+     * given {@link InputStream}, otherwise raise an {@code IllegalStateException}.
+     */
     // VisibleForTesting
     static boolean expectNewline(int c, InputStream stream) throws IOException {
         if (CR == c) {
-            return expectNewline(verifyNoEof(stream.read()), stream);
+            return expectLf(verifyNoEof(stream.read()));
         }
 
+        throw new IllegalStateException("Expected CR (\\r), got " + c);
+    }
+
+    /* This method could just as easily be another condition in the 'if' statement
+     * in expectNewline() but this way we can raise a more specific exception when
+     * we don't get the expected CRLF in the stream.
+     */
+    static boolean expectLf(int c) {
         if (LF == c) {
             return true;
         }
 
-        throw new IllegalStateException("Expected newline (\\r or \\n), got " + c);
+        throw new IllegalStateException("Expected LF (\\n), got " + c);
     }
 }

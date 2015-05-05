@@ -272,6 +272,12 @@ public class RespParserTest {
         RespParser.expectNewline(inputStream.read(), inputStream);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testExpectedNewlineAllCrs() throws IOException {
+        final InputStream inputStream = new ByteArrayInputStream("\r\r\r\r\r\r".getBytes(CHARSET));
+        RespParser.expectNewline(inputStream.read(), inputStream);
+    }
+
     @Test
     public void testReadLineValid() throws IOException {
         final InputStream inputStream = new ByteArrayInputStream("foo\r\n".getBytes(CHARSET));
