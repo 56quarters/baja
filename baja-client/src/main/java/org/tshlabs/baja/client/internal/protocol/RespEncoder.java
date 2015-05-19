@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import static org.tshlabs.baja.client.internal.BajaUtils.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  *
@@ -15,11 +15,11 @@ public class RespEncoder {
     private final Charset payloadCharset;
 
     public RespEncoder(Charset payloadCharset) {
-        this.payloadCharset = checkNotNull(payloadCharset);
+        this.payloadCharset = requireNonNull(payloadCharset);
     }
 
     public byte[] encode(List<String> args) {
-        checkNotNull(args);
+        requireNonNull(args);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         quietWrite(out, getArrayPreamble(args));
 
