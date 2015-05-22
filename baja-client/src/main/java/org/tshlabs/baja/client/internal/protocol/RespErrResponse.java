@@ -1,8 +1,11 @@
 package org.tshlabs.baja.client.internal.protocol;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  *
  */
+@Immutable
 public class RespErrResponse {
 
     private final String message;

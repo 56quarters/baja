@@ -1,9 +1,11 @@
 package org.tshlabs.baja.client.internal.commands;
 
+import org.tshlabs.baja.client.types.Encodable;
+
 /**
  *
  */
-public enum HashCommand implements Command {
+public enum HashCommand implements Encodable {
     HDEL,
     HEXISTS,
     HGET,

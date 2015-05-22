@@ -1,6 +1,8 @@
 package org.tshlabs.baja.client.internal.protocol;
 
 
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +16,7 @@ import static java.util.Objects.requireNonNull;
 /**
  *
  */
+@Immutable
 public class RespParser {
 
     private static final int BULK_STRING_MAX_LEN = 1024 * 1024 * 512;
@@ -28,7 +31,7 @@ public class RespParser {
         this.payloadCharset = requireNonNull(payloadCharset);
     }
 
-    public RespType findType(InputStream stream) throws IOException {
+    public RespType findType(@Nonnull InputStream stream) throws IOException {
         requireNonNull(stream);
         final int type = verifyNoEof(stream.read());
 
@@ -40,7 +43,7 @@ public class RespParser {
         return dataType.get();
     }
 
-    public List<Object> readArray(InputStream stream) throws IOException {
+    public List<Object> readArray(@Nonnull InputStream stream) throws IOException {
         requireNonNull(stream);
         final long arraySize = readInteger(stream);
         final List<Object> out = new ArrayList<>();
@@ -78,7 +81,7 @@ public class RespParser {
         return out;
     }
 
-    public String readBulkString(InputStream stream) throws IOException {
+    public String readBulkString(@Nonnull InputStream stream) throws IOException {
         requireNonNull(stream);
         final long strLen = readInteger(stream);
         if (strLen == 0) { // special case empty string
@@ -111,12 +114,12 @@ public class RespParser {
         return new String(buffer, payloadCharset);
     }
 
-    public RespErrResponse readError(InputStream stream) throws IOException {
+    public RespErrResponse readError(@Nonnull InputStream stream) throws IOException {
         requireNonNull(stream);
         return new RespErrResponse(readLine(stream));
     }
 
-    public long readInteger(InputStream stream) throws IOException {
+    public long readInteger(@Nonnull InputStream stream) throws IOException {
         requireNonNull(stream);
         // Redis Serialization Protocol (RESP) specifies that integer types
         // are 64bit which is a long in Java, so we use a long here but
@@ -124,7 +127,7 @@ public class RespParser {
         return Long.parseLong(readLine(stream));
     }
 
-    public String readSimpleString(InputStream stream) throws IOException {
+    public String readSimpleString(@Nonnull InputStream stream) throws IOException {
         requireNonNull(stream);
         return readLine(stream);
     }
@@ -134,7 +137,7 @@ public class RespParser {
      * the results as a UTF-8 encoded string, not including the {@code \r\n}.
      */
     // VisibleForTesting
-    static String readLine(InputStream stream) throws IOException {
+    static String readLine(@Nonnull InputStream stream) throws IOException {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         int res;
 

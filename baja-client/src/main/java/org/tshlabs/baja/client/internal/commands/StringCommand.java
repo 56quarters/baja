@@ -1,9 +1,11 @@
 package org.tshlabs.baja.client.internal.commands;
 
+import org.tshlabs.baja.client.types.Encodable;
+
 /**
  *
  */
-public enum StringCommand implements Command {
+public enum StringCommand implements Encodable {
     APPEND,
     BITCOUNT,
     BITOP,

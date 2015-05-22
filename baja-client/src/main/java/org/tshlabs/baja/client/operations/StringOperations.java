@@ -1,25 +1,37 @@
 package org.tshlabs.baja.client.operations;
 
+import org.tshlabs.baja.client.types.Encodable;
+
 /**
  *
  */
 public interface StringOperations {
 
-    enum BitOperation {
-        AND, OR, XOR, NOT
+    enum BitOperation implements Encodable {
+        AND, OR, XOR, NOT;
+
+        @Override
+        public String toRepr() {
+            return name();
+        }
     }
 
-    enum SetOperation {
-        EX, PX, NX, XX
+    enum SetOperation implements Encodable {
+        EX, PX, NX, XX;
+
+        @Override
+        public String toRepr() {
+            return name();
+        }
     }
 
-    int append(String key, String value);
+    long append(String key, String value);
 
-    int bitcount(String key);
+    long bitcount(String key);
 
-    int bitcount(String key, int start, int end);
+    long bitcount(String key, long start, long end);
 
-    int bitop(BitOperation op, String destKey, String key, String... keys);
+    long bitop(BitOperation op, String destKey, String key, String... keys);
 
 
     String get(String key);
