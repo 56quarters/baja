@@ -1,4 +1,4 @@
-package org.tshlabs.baja.client.internal;
+package org.tshlabs.baja.client.internal.conn;
 
 import org.tshlabs.baja.client.exceptions.BajaProtocolErrorException;
 import org.tshlabs.baja.client.exceptions.BajaRuntimeException;
@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
  *
  */
 @NotThreadSafe
-public class Connection {
+public class Connection implements CommandSink {
 
     private final OutputStream outputStream;
 

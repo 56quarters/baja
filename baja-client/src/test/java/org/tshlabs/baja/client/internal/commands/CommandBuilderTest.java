@@ -1,6 +1,7 @@
 package org.tshlabs.baja.client.internal.commands;
 
 import org.junit.Test;
+import org.tshlabs.baja.client.types.Encodable;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class CommandBuilderTest {
 
-    private enum MyCommands implements Command {
+    private enum MyCommands implements Encodable {
         GET,
         SET,
         SETEX;

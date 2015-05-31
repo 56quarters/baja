@@ -1,7 +1,7 @@
 package org.tshlabs.baja.client;
 
-import org.tshlabs.baja.client.internal.Connection;
-import org.tshlabs.baja.client.internal.commands.StringCommand;
+import org.tshlabs.baja.client.internal.conn.Connection;
+import org.tshlabs.baja.client.internal.operations.StringOperationsImpl;
 import org.tshlabs.baja.client.internal.protocol.RespEncoder;
 import org.tshlabs.baja.client.internal.protocol.RespEncodings;
 import org.tshlabs.baja.client.internal.protocol.RespParser;
@@ -10,9 +10,6 @@ import org.tshlabs.baja.client.operations.StringOperations;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.List;
-
-import static org.tshlabs.baja.client.internal.commands.CommandBuilder.command;
 
 /**
  *
@@ -40,11 +37,8 @@ public class BajaClientImpl implements BajaClient {
                 encoder,
                 parser);
 
-        final List<String> cmd = command(StringCommand.GET)
-                .arg("foo")
-                .build();
+        final StringOperations ops = new StringOperationsImpl(conn);
 
-        conn.writeCommand(cmd);
-        System.out.println(conn.readBulkString());
+        System.out.println(ops.get("baz"));
     }
 }

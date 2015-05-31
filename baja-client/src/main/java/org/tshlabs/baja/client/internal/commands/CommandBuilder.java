@@ -41,6 +41,11 @@ public class CommandBuilder {
         return this;
     }
 
+    public CommandBuilder arg(float arg) {
+        this.args.add(String.valueOf(arg));
+        return this;
+    }
+
     public CommandBuilder arg(boolean arg) {
         // Redis doesn't really have boolean types so we use 1 or 0
         this.args.add((arg ? "1" : "0"));
