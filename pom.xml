@@ -20,7 +20,6 @@
 
     <modules>
         <module>baja-client</module>
-        <module>baja-pool</module>
     </modules>
 
     <properties>

@@ -1,4 +1,4 @@
-package org.tshlabs.baja.client.internal.protocol;
+package org.tshlabs.baja.client.protocol;
 
 
 import javax.annotation.Nonnull;

@@ -1,19 +1,23 @@
-package org.tshlabs.baja.client.internal.conn;
+package org.tshlabs.baja.client;
 
 import org.tshlabs.baja.client.exceptions.BajaProtocolErrorException;
+import org.tshlabs.baja.client.exceptions.BajaResourceException;
 import org.tshlabs.baja.client.exceptions.BajaRuntimeException;
-import org.tshlabs.baja.client.internal.protocol.RespEncoder;
-import org.tshlabs.baja.client.internal.protocol.RespErrResponse;
-import org.tshlabs.baja.client.internal.protocol.RespParser;
-import org.tshlabs.baja.client.internal.protocol.RespType;
+import org.tshlabs.baja.client.protocol.RespEncoder;
+import org.tshlabs.baja.client.protocol.RespErrResponse;
+import org.tshlabs.baja.client.protocol.RespParser;
+import org.tshlabs.baja.client.protocol.RespType;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -22,7 +26,7 @@ import static java.util.Objects.requireNonNull;
  *
  */
 @NotThreadSafe
-public class Connection implements CommandSink {
+public class RedisConnection {
 
     private final OutputStream outputStream;
 
@@ -32,11 +36,11 @@ public class Connection implements CommandSink {
 
     private final RespParser parser;
 
-    public Connection(
-            InputStream inputStream,
-            OutputStream outputStream,
-            RespEncoder encoder,
-            RespParser parser) {
+    public RedisConnection(
+            @Nonnull InputStream inputStream,
+            @Nonnull OutputStream outputStream,
+            @Nonnull RespEncoder encoder,
+            @Nonnull RespParser parser) {
         this.inputStream = requireNonNull(inputStream);
         this.outputStream = requireNonNull(outputStream);
         this.encoder = requireNonNull(encoder);
@@ -83,6 +87,13 @@ public class Connection implements CommandSink {
         return IOFunction.runCommand(() -> parser.readArray(inputStream));
     }
 
+    public List<String> readStringArray() {
+        verifyResponseType(Collections.singleton(RespType.ARRAY));
+        return IOFunction.runCommand(() -> parser.readArray(inputStream)).stream()
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Ensure that the type of the result in the {@link InputStream} matches one of
      * the supplied, expected types and return the actual type of the result.
@@ -108,5 +119,19 @@ public class Connection implements CommandSink {
         }
 
         return type;
+    }
+
+    @FunctionalInterface
+    interface IOFunction<R> {
+
+        R call() throws IOException;
+
+        static <R> R runCommand(IOFunction<R> func) {
+            try {
+                return func.call();
+            } catch (IOException e) {
+                throw new BajaResourceException(e);
+            }
+        }
     }
 }
