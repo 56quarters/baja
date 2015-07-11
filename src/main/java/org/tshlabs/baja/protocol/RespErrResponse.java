@@ -2,6 +2,7 @@ package org.tshlabs.baja.protocol;
 
 /**
  *
+ * This class is thread safe.
  */
 public class RespErrResponse {
 

@@ -7,6 +7,7 @@ import java.util.Optional;
 
 /**
  *
+ * This class is thread safe.
  */
 public enum RespType {
     ARRAY("*"),

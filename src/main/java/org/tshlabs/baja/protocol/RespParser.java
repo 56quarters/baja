@@ -13,6 +13,7 @@ import static java.util.Objects.requireNonNull;
 
 /**
  *
+ * This class is thread safe.
  */
 public class RespParser {
 
