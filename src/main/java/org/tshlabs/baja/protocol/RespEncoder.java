@@ -4,8 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
-
-import static java.util.Objects.requireNonNull;
+import java.util.Objects;
 
 /**
  *
@@ -16,11 +15,11 @@ public class RespEncoder {
     private final Charset payloadCharset;
 
     public RespEncoder(Charset payloadCharset) {
-        this.payloadCharset = requireNonNull(payloadCharset);
+        this.payloadCharset = Objects.requireNonNull(payloadCharset);
     }
 
     public byte[] encode(List<String> args) {
-        requireNonNull(args);
+        Objects.requireNonNull(args);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         quietWrite(out, getArrayPreamble(args));
 

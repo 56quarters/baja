@@ -7,9 +7,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * This class is thread safe.
@@ -25,11 +24,11 @@ public class RespParser {
     private final Charset payloadCharset;
 
     public RespParser(Charset payloadCharset) {
-        this.payloadCharset = requireNonNull(payloadCharset);
+        this.payloadCharset = Objects.requireNonNull(payloadCharset);
     }
 
     public RespType findType(InputStream stream) throws IOException {
-        requireNonNull(stream);
+        Objects.requireNonNull(stream);
         final int type = verifyNoEof(stream.read());
 
         final Optional<RespType> dataType = RespType.lookup(type);
@@ -41,7 +40,7 @@ public class RespParser {
     }
 
     public List<Object> readArray(InputStream stream) throws IOException {
-        requireNonNull(stream);
+        Objects.requireNonNull(stream);
         final long arraySize = readLong(stream);
         final List<Object> out = new ArrayList<>();
 
@@ -79,7 +78,7 @@ public class RespParser {
     }
 
     public String readBulkString(InputStream stream) throws IOException {
-        requireNonNull(stream);
+        Objects.requireNonNull(stream);
         final long strLen = readLong(stream);
         if (strLen == 0) { // special case empty string
             return "";
@@ -112,12 +111,12 @@ public class RespParser {
     }
 
     public RespErrResponse readError(InputStream stream) throws IOException {
-        requireNonNull(stream);
+        Objects.requireNonNull(stream);
         return new RespErrResponse(readLine(stream));
     }
 
     public long readLong(InputStream stream) throws IOException {
-        requireNonNull(stream);
+        Objects.requireNonNull(stream);
         // Redis Serialization Protocol (RESP) specifies that integer types
         // are 64bit which is a long in Java, so we just treat this as a long
         // and call it a long everywhere even though it corresponds to the
@@ -126,7 +125,7 @@ public class RespParser {
     }
 
     public String readSimpleString(InputStream stream) throws IOException {
-        requireNonNull(stream);
+        Objects.requireNonNull(stream);
         return readLine(stream);
     }
 
