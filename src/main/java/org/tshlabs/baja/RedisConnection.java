@@ -121,7 +121,7 @@ public class RedisConnection {
     }
 
     @FunctionalInterface
-    interface IOFunction<R> {
+    private interface IOFunction<R> {
 
         R call() throws IOException;
 
