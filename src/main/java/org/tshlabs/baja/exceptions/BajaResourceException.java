@@ -1,4 +1,4 @@
-package org.tshlabs.baja.client.exceptions;
+package org.tshlabs.baja.exceptions;
 
 /**
  *

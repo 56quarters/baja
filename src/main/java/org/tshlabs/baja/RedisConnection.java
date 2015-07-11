@@ -1,12 +1,12 @@
-package org.tshlabs.baja.client;
+package org.tshlabs.baja;
 
-import org.tshlabs.baja.client.exceptions.BajaProtocolErrorException;
-import org.tshlabs.baja.client.exceptions.BajaResourceException;
-import org.tshlabs.baja.client.exceptions.BajaRuntimeException;
-import org.tshlabs.baja.client.protocol.RespEncoder;
-import org.tshlabs.baja.client.protocol.RespErrResponse;
-import org.tshlabs.baja.client.protocol.RespParser;
-import org.tshlabs.baja.client.protocol.RespType;
+import org.tshlabs.baja.exceptions.BajaProtocolErrorException;
+import org.tshlabs.baja.exceptions.BajaResourceException;
+import org.tshlabs.baja.exceptions.BajaRuntimeException;
+import org.tshlabs.baja.protocol.RespEncoder;
+import org.tshlabs.baja.protocol.RespErrResponse;
+import org.tshlabs.baja.protocol.RespParser;
+import org.tshlabs.baja.protocol.RespType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,11 +44,13 @@ public class RedisConnection {
         this.parser = requireNonNull(parser);
     }
 
-    public void writeCommand(List<String> args) {
+    public RedisConnection writeCommand(List<String> args) {
         IOFunction.runCommand(() -> {
             outputStream.write(encoder.encode(args));
             return null;
         });
+
+        return this;
     }
 
     public String readSimpleString() {

@@ -1,4 +1,4 @@
-package org.tshlabs.baja.client.protocol;
+package org.tshlabs.baja.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
