@@ -2,6 +2,7 @@ package org.tshlabs.baja;
 
 import org.tshlabs.baja.exceptions.BajaProtocolErrorException;
 import org.tshlabs.baja.exceptions.BajaResourceException;
+import org.tshlabs.baja.exceptions.BajaTypeMismatchException;
 import org.tshlabs.baja.protocol.*;
 
 import java.io.IOException;
@@ -108,7 +109,7 @@ public class RedisConnection {
      * @return The actual type in the input stream
      * @throws BajaProtocolErrorException If the type in the input stream is of
      *                                    {@link RespType#ERROR}
-     * @throws IllegalStateException      If the type in the input stream is not
+     * @throws BajaTypeMismatchException  If the type in the input stream is not
      *                                    an error or one of the expected types.
      */
     // VisibleForTesting
@@ -121,7 +122,7 @@ public class RedisConnection {
         }
 
         if (!expected.contains(type)) {
-            throw new IllegalStateException(
+            throw new BajaTypeMismatchException(
                     "Unexpected type. Expected one of " + expected + ", got " + type);
         }
 
