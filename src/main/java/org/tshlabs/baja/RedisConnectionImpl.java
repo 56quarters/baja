@@ -2,7 +2,6 @@ package org.tshlabs.baja;
 
 import org.tshlabs.baja.exceptions.BajaProtocolErrorException;
 import org.tshlabs.baja.exceptions.BajaResourceException;
-import org.tshlabs.baja.exceptions.BajaRuntimeException;
 import org.tshlabs.baja.protocol.*;
 
 import java.io.IOException;
@@ -37,7 +36,8 @@ public class RedisConnectionImpl implements RedisConnection {
                 inputStream,
                 outputStream,
                 new RespEncoder(RespEncodings.DEFAULT_PAYLOAD),
-                new RespParser(RespEncodings.DEFAULT_PAYLOAD));
+                new RespParser(RespEncodings.DEFAULT_PAYLOAD)
+        );
     }
 
     public RedisConnectionImpl(
@@ -115,10 +115,11 @@ public class RedisConnectionImpl implements RedisConnection {
      * @return The actual type in the input stream
      * @throws BajaProtocolErrorException If the type in the input stream is of
      *                                    {@link RespType#ERROR}
-     * @throws BajaRuntimeException       If the type in the input stream is not
+     * @throws IllegalStateException      If the type in the input stream is not
      *                                    an error or one of the expected types.
      */
-    private RespType verifyResponseType(Set<RespType> expected) {
+    // VisibleForTesting
+    RespType verifyResponseType(Set<RespType> expected) {
         final RespType type = IOFunction.runCommand(() -> parser.findType(inputStream));
 
         if (type == RespType.ERROR) {
@@ -127,7 +128,7 @@ public class RedisConnectionImpl implements RedisConnection {
         }
 
         if (!expected.contains(type)) {
-            throw new BajaRuntimeException(
+            throw new IllegalStateException(
                     "Unexpected type. Expected one of " + expected + ", got " + type);
         }
 
