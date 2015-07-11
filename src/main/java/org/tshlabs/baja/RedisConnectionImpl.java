@@ -88,9 +88,9 @@ public class RedisConnectionImpl implements RedisConnection {
     }
 
     @Override
-    public long readInteger() {
+    public long readLong() {
         verifyResponseType(Collections.singleton(RespType.INTEGER));
-        return IOFunction.runCommand(() -> parser.readInteger(inputStream));
+        return IOFunction.runCommand(() -> parser.readLong(inputStream));
     }
 
     @Override

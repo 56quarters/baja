@@ -12,7 +12,6 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 
 /**
- *
  * This class is thread safe.
  */
 public class RespParser {
@@ -43,7 +42,7 @@ public class RespParser {
 
     public List<Object> readArray(InputStream stream) throws IOException {
         requireNonNull(stream);
-        final long arraySize = readInteger(stream);
+        final long arraySize = readLong(stream);
         final List<Object> out = new ArrayList<>();
 
         if (arraySize == 0) { // special case empty array
@@ -68,7 +67,7 @@ public class RespParser {
                     out.add(readError(stream));
                     break;
                 case INTEGER:
-                    out.add(readInteger(stream));
+                    out.add(readLong(stream));
                     break;
                 case SIMPLE_STRING:
                     out.add(readSimpleString(stream));
@@ -81,7 +80,7 @@ public class RespParser {
 
     public String readBulkString(InputStream stream) throws IOException {
         requireNonNull(stream);
-        final long strLen = readInteger(stream);
+        final long strLen = readLong(stream);
         if (strLen == 0) { // special case empty string
             return "";
         }
@@ -117,11 +116,12 @@ public class RespParser {
         return new RespErrResponse(readLine(stream));
     }
 
-    public long readInteger(InputStream stream) throws IOException {
+    public long readLong(InputStream stream) throws IOException {
         requireNonNull(stream);
         // Redis Serialization Protocol (RESP) specifies that integer types
-        // are 64bit which is a long in Java, so we use a long here but
-        // call it an integer. Maybe this is dumb.
+        // are 64bit which is a long in Java, so we just treat this as a long
+        // and call it a long everywhere even though it corresponds to the
+        // 'integer' type in RESP.
         return Long.parseLong(readLine(stream));
     }
 

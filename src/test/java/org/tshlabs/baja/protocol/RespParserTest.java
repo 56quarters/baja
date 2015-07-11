@@ -113,15 +113,15 @@ public class RespParserTest {
     }
 
     @Test
-    public void testReadInteger1() throws IOException {
+    public void testReadLong1() throws IOException {
         final InputStream inputStream = new ByteArrayInputStream("0\r\n".getBytes(CHARSET));
-        assertEquals(0L, parser.readInteger(inputStream));
+        assertEquals(0L, parser.readLong(inputStream));
     }
 
     @Test
-    public void testReadInteger2() throws IOException {
+    public void testReadLong2() throws IOException {
         final InputStream inputStream = new ByteArrayInputStream("1308\r\n".getBytes(CHARSET));
-        assertEquals(1308L, parser.readInteger(inputStream));
+        assertEquals(1308L, parser.readLong(inputStream));
     }
 
     @Test

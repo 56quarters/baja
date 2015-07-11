@@ -14,7 +14,7 @@ public interface RedisConnection {
 
     String readSimpleOrBulkString();
 
-    long readInteger();
+    long readLong();
 
     List<Object> readArray();
 
