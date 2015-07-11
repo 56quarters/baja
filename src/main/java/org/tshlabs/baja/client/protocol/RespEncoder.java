@@ -1,7 +1,5 @@
 package org.tshlabs.baja.client.protocol;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -12,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 /**
  *
  */
-@Immutable
 public class RespEncoder {
 
     private final Charset payloadCharset;
@@ -21,7 +18,7 @@ public class RespEncoder {
         this.payloadCharset = requireNonNull(payloadCharset);
     }
 
-    public byte[] encode(@Nonnull List<String> args) {
+    public byte[] encode(List<String> args) {
         requireNonNull(args);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         quietWrite(out, getArrayPreamble(args));

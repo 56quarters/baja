@@ -8,8 +8,6 @@ import org.tshlabs.baja.client.protocol.RespErrResponse;
 import org.tshlabs.baja.client.protocol.RespParser;
 import org.tshlabs.baja.client.protocol.RespType;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,7 +23,6 @@ import static java.util.Objects.requireNonNull;
 /**
  *
  */
-@NotThreadSafe
 public class RedisConnection {
 
     private final OutputStream outputStream;
@@ -37,10 +34,10 @@ public class RedisConnection {
     private final RespParser parser;
 
     public RedisConnection(
-            @Nonnull InputStream inputStream,
-            @Nonnull OutputStream outputStream,
-            @Nonnull RespEncoder encoder,
-            @Nonnull RespParser parser) {
+            InputStream inputStream,
+            OutputStream outputStream,
+            RespEncoder encoder,
+            RespParser parser) {
         this.inputStream = requireNonNull(inputStream);
         this.outputStream = requireNonNull(outputStream);
         this.encoder = requireNonNull(encoder);
