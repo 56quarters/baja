@@ -32,17 +32,6 @@ public class RedisConnection {
 
     public RedisConnection(
             InputStream inputStream,
-            OutputStream outputStream) {
-        this(
-                inputStream,
-                outputStream,
-                new RespEncoder(RespEncodings.DEFAULT_PAYLOAD),
-                new RespParser(RespEncodings.DEFAULT_PAYLOAD)
-        );
-    }
-
-    public RedisConnection(
-            InputStream inputStream,
             OutputStream outputStream,
             RespEncoder encoder,
             RespParser parser) {
