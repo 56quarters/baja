@@ -3,7 +3,10 @@ package org.tshlabs.baja;
 import org.tshlabs.baja.exceptions.BajaProtocolErrorException;
 import org.tshlabs.baja.exceptions.BajaResourceException;
 import org.tshlabs.baja.exceptions.BajaTypeMismatchException;
-import org.tshlabs.baja.protocol.*;
+import org.tshlabs.baja.protocol.RespEncoder;
+import org.tshlabs.baja.protocol.RespErrResponse;
+import org.tshlabs.baja.protocol.RespParser;
+import org.tshlabs.baja.protocol.RespType;
 
 import java.io.IOException;
 import java.io.InputStream;
