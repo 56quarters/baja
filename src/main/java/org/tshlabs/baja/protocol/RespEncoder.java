@@ -1,13 +1,11 @@
 package org.tshlabs.baja.protocol;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
 
 /**
- *
  * This class is thread safe.
  */
 public class RespEncoder {
@@ -21,11 +19,11 @@ public class RespEncoder {
     public byte[] encode(List<String> args) {
         Objects.requireNonNull(args);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        quietWrite(out, getArrayPreamble(args));
+        writeToStream(out, getArrayPreamble(args));
 
         for (String arg : args) {
-            quietWrite(out, getArgPreamble(arg));
-            quietWrite(out, arg.getBytes(payloadCharset));
+            writeToStream(out, getArgPreamble(arg));
+            writeToStream(out, arg.getBytes(payloadCharset));
             out.write('\r');
             out.write('\n');
         }
@@ -33,14 +31,13 @@ public class RespEncoder {
         return out.toByteArray();
     }
 
-    private static void quietWrite(ByteArrayOutputStream stream, byte[] bytes) {
-        try {
-            stream.write(bytes);
-        } catch (IOException e) {
-            throw new IllegalStateException("" +
-                    "IOException when writing to a an in-memory byte array. This " +
-                    "should be impossible. Please ensure hell has not frozen over", e);
-        }
+    private static void writeToStream(ByteArrayOutputStream stream, byte[] bytes) {
+        // Pass the offset and length here explicitly so that we're calling
+        // the .write() method defined in ByteArrayOutputStream (instead of the
+        // one defined in OutputStream) which doesn't include an IOException as
+        // part of its signature. This way we don't have to pretend to handle an
+        // exception that will never be raised.
+        stream.write(bytes, 0, bytes.length);
     }
 
     // VisibleForTesting
