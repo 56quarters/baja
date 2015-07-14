@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * This class is thread safe.
@@ -31,12 +30,8 @@ public class RespParser {
         Objects.requireNonNull(stream);
         final int type = verifyNoEof(stream.read());
 
-        final Optional<RespType> dataType = RespType.lookup(type);
-        if (!dataType.isPresent()) {
-            throw new IllegalArgumentException("Could not parse invalid type " + type);
-        }
-
-        return dataType.get();
+        return RespType.lookup(type).orElseThrow((() ->
+                new IllegalArgumentException("Could not parse invalid type " + type)));
     }
 
     public List<Object> readArray(InputStream stream) throws IOException {
