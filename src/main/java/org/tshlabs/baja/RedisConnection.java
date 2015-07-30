@@ -11,13 +11,8 @@ import org.tshlabs.baja.protocol.RespType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.requireNonNull;
 
 
 /**
@@ -57,10 +52,10 @@ public class RedisConnection {
             OutputStream outputStream,
             RespEncoder encoder,
             RespParser parser) {
-        this.inputStream = requireNonNull(inputStream);
-        this.outputStream = requireNonNull(outputStream);
-        this.encoder = requireNonNull(encoder);
-        this.parser = requireNonNull(parser);
+        this.inputStream = Objects.requireNonNull(inputStream);
+        this.outputStream = Objects.requireNonNull(outputStream);
+        this.encoder = Objects.requireNonNull(encoder);
+        this.parser = Objects.requireNonNull(parser);
     }
 
     /**
