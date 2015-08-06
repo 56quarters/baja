@@ -6,7 +6,11 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ * Enum representing the types supported by the Redis Protocol.
+ * <p>
  * This class is thread safe.
+ *
+ * @see <a href="http://redis.io/topics/protocol">Redis Protocol</a>
  */
 public enum RespType {
     ARRAY("*"),
