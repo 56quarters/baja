@@ -47,18 +47,36 @@ public enum RespType {
         this.tokenString = tokenString;
     }
 
+    /**
+     * @return The byte representation of this type as a signed integer.
+     */
     public int getByte() {
         return token;
     }
 
+    /**
+     * @return The string representation of this type (a single character)
+     */
     public String getString() {
         return tokenString;
     }
 
+    /**
+     * Get a RESP type based on the given byte (as a signed integer)
+     *
+     * @param token Byte representation of the type
+     * @return Type according to the RESP byte representation
+     */
     public static Optional<RespType> lookup(int token) {
         return Optional.ofNullable(BYTE_LOOKUP.get(token));
     }
 
+    /**
+     * Get a RESP type based on the given string
+     *
+     * @param token String representation of the type
+     * @return Type according to the RESP string representation
+     */
     public static Optional<RespType> lookup(String token) {
         return Optional.ofNullable(STRING_LOOKUP.get(token));
     }

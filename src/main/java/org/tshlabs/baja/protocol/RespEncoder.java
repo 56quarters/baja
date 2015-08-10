@@ -22,6 +22,14 @@ public class RespEncoder {
     private final Charset payloadCharset;
 
     /**
+     * Construct a new encoder using a default character set for encoding
+     * string data.
+     */
+    public RespEncoder() {
+        this(RespEncodings.DEFAULT_PAYLOAD);
+    }
+
+    /**
      * Construct a new encoder using the given character set for encoding
      * string data.
      *
