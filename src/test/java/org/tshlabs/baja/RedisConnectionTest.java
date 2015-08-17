@@ -23,9 +23,6 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- *
- */
 @RunWith(MockitoJUnitRunner.class)
 public class RedisConnectionTest {
 
