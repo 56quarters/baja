@@ -51,10 +51,11 @@ public class RedisCommandTest {
     @Test
     public void testQuery() {
         final RedisConnection conn = mock(RedisConnection.class);
-        final RedisCommand.ExecutedRedisCommand res = RedisCommand.cmd("SET")
+        RedisCommand.cmd("SET")
                 .arg("foo")
                 .arg(123)
-                .query(conn);
+                .query(conn)
+                .discard();
 
         verify(conn).writeCommand(eq(Arrays.asList("SET", "foo", "123")));
     }

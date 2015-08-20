@@ -41,14 +41,10 @@ public class RedisCommandIT {
         this.connection = new RedisConnection(
                 inputStream, outputStream, new RespEncoder(), new RespParser());
 
-        final String selected = RedisCommand.cmd("SELECT")
+        RedisCommand.cmd("SELECT")
                 .arg(redisDatabase)
                 .query(this.connection)
-                .asString();
-
-        if (!"OK".equals(selected)) {
-            throw new IllegalStateException("Expected to select test DB. Response: " + selected);
-        }
+                .discard();
     }
 
     @After

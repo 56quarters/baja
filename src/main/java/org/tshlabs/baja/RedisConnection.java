@@ -189,6 +189,42 @@ public class RedisConnection {
     }
 
     /**
+     * Read any type of response from the server, throwing an exception if the result is
+     * an Redis error.
+     * <p>
+     * This might be useful for Redis commands that return different types based on the
+     * arguments supplied to them. In this case, the caller will have to inspect the type
+     * of the result afterwards to determine the appropriate course of action.
+     * <p>
+     * This is a blocking operation.
+     *
+     * @return The response as an Object
+     * @throws BajaResourceException      If there was an error reading from the stream
+     * @throws BajaProtocolErrorException If the server responded with an error result
+     */
+    public Object readAnyType() {
+        final Set<RespType> expected = new HashSet<>();
+        expected.add(RespType.BULK_STRING);
+        expected.add(RespType.SIMPLE_STRING);
+        expected.add(RespType.INTEGER);
+        expected.add(RespType.ARRAY);
+
+        final RespType type = verifyResponseType(expected);
+        switch (type) {
+            case BULK_STRING:
+                return IOFunction.runCommand(() -> parser.readBulkString(inputStream));
+            case SIMPLE_STRING:
+                return IOFunction.runCommand(() -> parser.readSimpleString(inputStream));
+            case INTEGER:
+                return IOFunction.runCommand(() -> parser.readLong(inputStream));
+            case ARRAY:
+                return IOFunction.runCommand(() -> parser.readArray(inputStream));
+        }
+
+        throw new IllegalStateException("Got unexpected result type " + type);
+    }
+
+    /**
      * Ensure that the type of the result in the {@link InputStream} matches one of
      * the supplied, expected types and return the actual type of the result.
      *

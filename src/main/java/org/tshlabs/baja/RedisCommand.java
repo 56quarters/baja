@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  * Class for assembling a command and sequence arguments to send to a Redis server
  * and read the results using a {@link RedisConnection} instance.
- *
+ * <p>
  * This class is <em>not</em> thread safe.
  */
 public class RedisCommand {
@@ -190,6 +190,37 @@ public class RedisCommand {
          */
         public List<String> asStringArray() {
             return connection.readStringArray();
+        }
+
+        /**
+         * Get the results of the executed command as an {@code Object}.
+         * <p>
+         * This may be useful for Redis commands that return multiple types based on arguments
+         * supplied to the commands. In this case, it is up to the caller of this method to
+         * inspect the results and determine the correct course of action.
+         *
+         * @return Command results as an object.
+         * @throws org.tshlabs.baja.exceptions.BajaResourceException      If there was an I/O error
+         * @throws org.tshlabs.baja.exceptions.BajaProtocolErrorException If the Redis server responded
+         *                                                                with an error
+         */
+        public Object asObject() {
+            return connection.readAnyType();
+        }
+
+        /**
+         * Read and then immediately discard the results of an executed command.
+         * <p>
+         * Note that if the result of the command was an error from the Redis server
+         * this will still be raised as an {@link org.tshlabs.baja.exceptions.BajaProtocolErrorException
+         * exception}.
+         *
+         * @throws org.tshlabs.baja.exceptions.BajaResourceException      If there was an I/O error
+         * @throws org.tshlabs.baja.exceptions.BajaProtocolErrorException If the Redis server responded
+         *                                                                with an error
+         */
+        public void discard() {
+            connection.readAnyType();
         }
     }
 }

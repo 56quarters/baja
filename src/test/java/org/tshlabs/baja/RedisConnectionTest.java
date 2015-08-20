@@ -116,6 +116,50 @@ public class RedisConnectionTest {
     }
 
     @Test
+    public void testReadAnyTypeSuccessSimpleString() throws IOException {
+        when(parser.findType(inputStream)).thenReturn(RespType.SIMPLE_STRING);
+        when(parser.readSimpleString(inputStream)).thenReturn("OK");
+        assertEquals("OK", connection.readAnyType());
+    }
+
+    @Test
+    public void testReadAnyTypeSuccessBulkString() throws IOException {
+        when(parser.findType(inputStream)).thenReturn(RespType.BULK_STRING);
+        when(parser.readBulkString(inputStream)).thenReturn("foo");
+        assertEquals("foo", connection.readAnyType());
+    }
+
+    @Test
+    public void testReadAnyTypeSuccessLong() throws IOException {
+        when(parser.findType(inputStream)).thenReturn(RespType.INTEGER);
+        when(parser.readLong(inputStream)).thenReturn(6458L);
+        assertEquals(6458L, connection.readAnyType());
+    }
+
+    @Test
+    public void testReadAnyTypeSuccessArray() throws IOException {
+        final List<Object> res = new ArrayList<>();
+        res.add("It's");
+        res.add("Tricky");
+
+        when(parser.findType(inputStream)).thenReturn(RespType.ARRAY);
+        when(parser.readArray(inputStream)).thenReturn(res);
+
+        // Suppressing because this will either work or we've got a bug
+        @SuppressWarnings("unchecked")
+        final List<Object> arrayRes = (List<Object>) connection.readAnyType();
+        assertEquals("It's", arrayRes.get(0));
+        assertEquals("Tricky", arrayRes.get(1));
+    }
+
+    @Test(expected = BajaResourceException.class)
+    public void testReadAnyTypeIOException() throws IOException {
+        when(parser.findType(inputStream)).thenReturn(RespType.ARRAY);
+        when(parser.readArray(inputStream)).thenThrow(IOException.class);
+        connection.readAnyType();
+    }
+
+    @Test
     public void testReadLongSuccess() throws IOException {
         when(parser.findType(inputStream)).thenReturn(RespType.INTEGER);
         when(parser.readLong(inputStream)).thenReturn(6458L);
