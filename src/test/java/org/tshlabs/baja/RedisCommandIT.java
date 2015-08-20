@@ -16,7 +16,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
- *
+ * Basic integration test that talks to a local Redis instance
+ * to ensure that we can select a database, get, and set keys.
+ * <p>
+ * NOTE: that this test will perform destructive operations in
+ * the local Redis database since it expects to be running on a
+ * development or CI machine.
  */
 public class RedisCommandIT {
 
