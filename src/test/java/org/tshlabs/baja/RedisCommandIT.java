@@ -44,7 +44,7 @@ public class RedisCommandIT {
         this.outputStream = socket.getOutputStream();
 
         this.connection = new RedisConnection(
-                inputStream, outputStream, new RespEncoder(), new RespParser());
+                inputStream, outputStream, RespEncoder.getInstance(), RespParser.getInstance());
 
         RedisCommand.cmd("SELECT")
                 .arg(redisDatabase)
@@ -82,5 +82,20 @@ public class RedisCommandIT {
     public void testGetExistent() {
         assertEquals("OK", RedisCommand.cmd("SET").arg("baz").arg("bing").query(connection).asString());
         assertEquals("bing", RedisCommand.cmd("GET").arg("baz").query(connection).asString());
+    }
+
+    @Test
+    public void testMultiGet() {
+        final Transaction transaction = connection.transaction();
+        final Result<String> r1 = RedisCommand.cmd("SET").arg("k1").arg("v1").queue(transaction).asString();
+        final Result<String> r2 = RedisCommand.cmd("SET").arg("k2").arg("v2").queue(transaction).asString();
+        final Result<String> r3 = RedisCommand.cmd("GET").arg("k1").queue(transaction).asString();
+        final Result<String> r4 = RedisCommand.cmd("GET").arg("k2").queue(transaction).asString();
+        transaction.execute();
+
+        assertEquals("OK", r1.get());
+        assertEquals("OK", r2.get());
+        assertEquals("v1", r3.get());
+        assertEquals("v2", r4.get());
     }
 }

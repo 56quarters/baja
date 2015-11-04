@@ -45,7 +45,7 @@ public class RedisConnectionTest {
     public void testWriteCommandSingleItem() {
         final List<String> cmd = Collections.singletonList("COMMAND");
         connection.writeCommand(cmd);
-        verify(encoder).encode(cmd);
+        verify(encoder).encodeMulti(Collections.singletonList(cmd));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class RedisConnectionTest {
         cmd.add("5");
 
         connection.writeCommand(cmd);
-        verify(encoder).encode(cmd);
+        verify(encoder).encodeMulti(Collections.singletonList(cmd));
     }
 
     @Test(expected = BajaResourceException.class)
@@ -245,7 +245,7 @@ public class RedisConnectionTest {
     public void testVerifyResponseTypeErrorType() throws IOException {
         when(parser.findType(inputStream)).thenReturn(RespType.ERROR);
         when(parser.readError(inputStream)).thenReturn(new RespErrResponse(
-                "ERR wrong number of arguments for 'set' command"));
+            "ERR wrong number of arguments for 'set' command"));
         connection.verifyResponseType(Collections.singleton(RespType.SIMPLE_STRING));
     }
 

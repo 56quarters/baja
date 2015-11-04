@@ -2,6 +2,7 @@ package org.tshlabs.baja.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,11 +20,13 @@ import java.util.Objects;
  */
 public class RespEncoder {
 
+    private static final RespEncoder DEFAULT = new RespEncoder();
+
     private final Charset payloadCharset;
 
     /**
-     * Construct a new encoder using a default character set for encoding
-     * string data.
+     * Construct a new encoder using a {@link RespEncodings#DEFAULT_PAYLOAD default}
+     * character set for encoding string data.
      */
     public RespEncoder() {
         this(RespEncodings.DEFAULT_PAYLOAD);
@@ -41,25 +44,55 @@ public class RespEncoder {
     }
 
     /**
-     * Convert a list of strings to a byte array as specified by the payload
-     * character set and the Redis Serialization Protocol.
+     * Get a singleton instance of a RESP encoder with the
+     * {@link RespEncodings#DEFAULT_PAYLOAD default} character set encoding.
      *
-     * @param args List of a command and arguments as strings
-     * @return The command and arguments as a byte array
+     * @return Single RESP encoder with default character set
      */
-    public byte[] encode(List<String> args) {
-        Objects.requireNonNull(args);
+    public static RespEncoder getInstance() {
+        return DEFAULT;
+    }
+
+    /**
+     * Convert multiple lists of strings to a byte array as specified by the
+     * payload character set and the Redis Serialization Protocol.
+     * <p>
+     * The output will be properly encoded for sending multiple commands and
+     * their respective arguments to a Redis server.
+     * <p>
+     * If you only need to encode a single Redis command and arguments, you may
+     * call this method and wrap your arguments via {@link Collections#singletonList(Object)},
+     * <p>
+     * Example:
+     * <pre>
+     *    List&lt;String&gt; cmd = Arrays.asList("SET", "foo", "bar");
+     *    byte[] bytes = encoder.encodeMulti(Collections.singletonList(cmd));
+     * </pre>
+     *
+     * @param commands List of multiple commands and arguments as strings
+     * @return The commands and associated arguments as a byte array
+     */
+    public byte[] encodeMulti(List<List<String>> commands) {
+        Objects.requireNonNull(commands);
+
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        writeToStream(out, getArrayPreamble(args));
+        for (List<String> args : commands) {
+            writeCommandToStream(args, out);
+        }
+        return out.toByteArray();
+    }
+
+    private ByteArrayOutputStream writeCommandToStream(List<String> args, ByteArrayOutputStream stream) {
+        writeToStream(stream, getArrayPreamble(args));
 
         for (String arg : args) {
-            writeToStream(out, getArgPreamble(arg));
-            writeToStream(out, arg.getBytes(payloadCharset));
-            out.write('\r');
-            out.write('\n');
+            writeToStream(stream, getArgPreamble(arg));
+            writeToStream(stream, arg.getBytes(payloadCharset));
+            stream.write('\r');
+            stream.write('\n');
         }
 
-        return out.toByteArray();
+        return stream;
     }
 
     private static void writeToStream(ByteArrayOutputStream stream, byte[] bytes) {
@@ -74,12 +107,12 @@ public class RespEncoder {
     // VisibleForTesting
     static byte[] getArrayPreamble(List<String> args) {
         return (RespType.ARRAY.getString() + args.size() +
-                "\r\n").getBytes(RespEncodings.PROTOCOL);
+            "\r\n").getBytes(RespEncodings.PROTOCOL);
     }
 
     // VisibleForTesting
     static byte[] getArgPreamble(String arg) {
         return (RespType.BULK_STRING.getString() + arg.length() +
-                "\r\n").getBytes(RespEncodings.PROTOCOL);
+            "\r\n").getBytes(RespEncodings.PROTOCOL);
     }
 }

@@ -11,7 +11,9 @@ import java.nio.charset.StandardCharsets;
  *
  * @see <a href="http://redis.io/topics/protocol">Redis Protocol</a>
  */
-public class RespEncodings {
+public final class RespEncodings {
+
+    private RespEncodings() {}
 
     /**
      * Character set used to encode strings used as Redis control characters.

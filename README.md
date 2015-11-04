@@ -8,6 +8,8 @@ considered a Redis client.
 ## Usage
 
 
+### Includes
+
 ```xml
 <dependency>
     <groupId>org.tshlabs.baja</groupId>
@@ -16,6 +18,9 @@ considered a Redis client.
 </dependency>
 ```
 
+### Single Commands
+
+Executing single Redis commands at a time.
 
 ```java
 Socket socket = new Socket(redisHost, redisPort);
@@ -41,6 +46,54 @@ String res = RedisCommand.cmd("GET")
     .query(connection)
     .asString();
     
-// res = "bar"
+System.out.println(res); // "bar"
+
+```
+
+### Multiple Commands
+
+Executing multiple Redis commands in the context of a transaction.
+
+```java
+Socket socket = new Socket(redisHost, redisPort);
+InputStream in = socket.getInputStream();
+OutputStream out = socket.getOutputStream();
+
+RedisConnection connection = new RedisConnection(
+    in, out, new RespEncoder(), new RespParser());
+
+Transaction transaction = connection.transaction();
+
+RedisCommand.cmd("SELECT")
+    .arg(1)
+    .queue(transaction)
+    .discard();
+
+RedisCommand.cmd("SET")
+    .arg("k1")
+    .arg("v1")
+    .queue(transaction)
+    .discard();
+
+RedisCommand.cmd("SET")
+    .arg("k2")
+    .arg("v2")
+    .queue(transaction)
+    .discard();
+
+Result<String> res1 = RedisCommand.cmd("GET")
+    .arg("k1")
+    .queue(connection)
+    .asString();
+
+Result<String> res2 = RedisCommand.cmd("GET")
+    .arg("k2")
+    .queue(connection)
+    .asString();
+
+transaction.execute();
+
+System.out.println(res1.get()); // "v1"
+System.out.println(res2.get()); // "v2"
 
 ```

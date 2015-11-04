@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -48,14 +49,14 @@ public class RespEncoderTest {
 
     @Test(expected = NullPointerException.class)
     public void testEncodeNullInput() {
-        encoder.encode(null);
+        encoder.encodeMulti(null);
     }
 
     @Test
     public void testEncodeEmptyList() {
         final List<String> args = new ArrayList<>();
         final byte[] expected = "*0\r\n".getBytes(StandardCharsets.UTF_8);
-        assertArrayEquals(expected, encoder.encode(args));
+        assertArrayEquals(expected, encoder.encodeMulti(Collections.singletonList(args)));
     }
 
     @Test
@@ -65,7 +66,7 @@ public class RespEncoderTest {
         args.add("alist");
 
         final byte[] expected = "*2\r\n$4\r\nLLEN\r\n$5\r\nalist\r\n".getBytes(StandardCharsets.UTF_8);
-        assertArrayEquals(expected, encoder.encode(args));
+        assertArrayEquals(expected, encoder.encodeMulti(Collections.singletonList(args)));
     }
 
     @Test
@@ -82,7 +83,7 @@ public class RespEncoderTest {
                 "$3\r\nbar\r\n" +
                 "$2\r\n60\r\n").getBytes(StandardCharsets.UTF_8);
 
-        assertArrayEquals(expected, encoder.encode(args));
+        assertArrayEquals(expected, encoder.encodeMulti(Collections.singletonList((args))));
 
     }
 }

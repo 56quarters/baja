@@ -48,14 +48,27 @@ public class RedisConnection {
      * @throws NullPointerException If any arguments are null
      */
     public RedisConnection(
-            InputStream inputStream,
-            OutputStream outputStream,
-            RespEncoder encoder,
-            RespParser parser) {
+        InputStream inputStream,
+        OutputStream outputStream,
+        RespEncoder encoder,
+        RespParser parser) {
         this.inputStream = Objects.requireNonNull(inputStream);
         this.outputStream = Objects.requireNonNull(outputStream);
         this.encoder = Objects.requireNonNull(encoder);
         this.parser = Objects.requireNonNull(parser);
+    }
+
+    /**
+     * Get a new {@link Transaction} instance that can be used to execute multiple
+     * Redis commands at once, in the context of a transaction.
+     * <p>
+     * When the transaction executes, it will use this connection instance.
+     *
+     * @return New {@code Transaction} for executing a transaction
+     * @see <a href="http://redis.io/commands#transactions">Transaction</a>
+     */
+    public Transaction transaction() {
+        return new Transaction(this);
     }
 
     /**
@@ -68,8 +81,21 @@ public class RedisConnection {
      * @throws BajaResourceException If there was an error writing to the output stream
      */
     public RedisConnection writeCommand(List<String> args) {
+        return writeMultiCommand(Collections.singletonList(Objects.requireNonNull(args)));
+    }
+
+    /**
+     * Encode and send multiple commands and arguments to the Redis Server
+     * <p>
+     * This is a blocking operation.
+     *
+     * @param commands Multiple commands and associated arguments to send as strings
+     * @return fluent interface
+     * @throws BajaResourceException If there was an error writing to the output stream
+     */
+    public RedisConnection writeMultiCommand(List<List<String>> commands) {
         IOFunction.runCommand(() -> {
-            outputStream.write(encoder.encode(args));
+            outputStream.write(encoder.encodeMulti(Objects.requireNonNull(commands)));
             return null;
         });
 
@@ -184,8 +210,8 @@ public class RedisConnection {
     public List<String> readStringArray() {
         verifyResponseType(Collections.singleton(RespType.ARRAY));
         return IOFunction.runCommand(() -> parser.readArray(inputStream)).stream()
-                .map(i -> i == null ? null : String.valueOf(i))
-                .collect(Collectors.toList());
+            .map(i -> i == null ? null : String.valueOf(i))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -246,7 +272,7 @@ public class RedisConnection {
 
         if (!expected.contains(type)) {
             throw new BajaTypeMismatchException(
-                    "Unexpected type. Expected one of " + expected + ", got " + type);
+                "Unexpected type. Expected one of " + expected + ", got " + type);
         }
 
         return type;

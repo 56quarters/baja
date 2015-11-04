@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,6 +23,8 @@ import java.util.Objects;
  * @see <a href="http://redis.io/topics/protocol">Redis Protocol</a>
  */
 public class RespParser {
+
+    private static final RespParser DEFAULT = new RespParser();
 
     private static final int BULK_STRING_MAX_LEN = 1024 * 1024 * 512;
 
@@ -51,6 +54,16 @@ public class RespParser {
     }
 
     /**
+     * Get a singleton instance of a RESP parser with the
+     * {@link RespEncodings#DEFAULT_PAYLOAD default} character set encoding.
+     *
+     * @return Singleton RESP parser with default character set
+     */
+    public static RespParser getInstance() {
+        return DEFAULT;
+    }
+
+    /**
      * Read and determine the type of a response from the input stream.
      *
      * @param stream Input stream to read the type from
@@ -66,7 +79,7 @@ public class RespParser {
         final int type = verifyNoEof(stream.read());
 
         return RespType.lookup(type).orElseThrow((() ->
-                new IllegalArgumentException("Could not parse invalid type " + type)));
+            new IllegalArgumentException("Could not parse invalid type " + type)));
     }
 
     /**
@@ -87,16 +100,16 @@ public class RespParser {
     public List<Object> readArray(InputStream stream) throws IOException {
         Objects.requireNonNull(stream);
         final long arraySize = readLong(stream);
-        final List<Object> out = new ArrayList<>();
 
         if (arraySize == 0) { // special case empty array
-            return out;
+            return Collections.emptyList();
         }
 
         if (arraySize < 0) { // special case null array
             return null;
         }
 
+        final List<Object> out = new ArrayList<>();
         for (long i = 0; i < arraySize; i++) {
             final RespType type = findType(stream);
 
@@ -155,7 +168,7 @@ public class RespParser {
         // bigger than we can or should allocate.
         if (strLen > BULK_STRING_MAX_LEN) {
             throw new IllegalStateException(
-                    "Got unexpected length for bulk string " + strLen + " bytes");
+                "Got unexpected length for bulk string " + strLen + " bytes");
         }
 
         // See if we can read the entire bulk string in one go into a single
@@ -165,7 +178,7 @@ public class RespParser {
 
         if (read != strLen) {
             throw new IllegalStateException(
-                    "Expected to read " + strLen + " bytes, got " + read);
+                "Expected to read " + strLen + " bytes, got " + read);
         }
 
         expectNewline(verifyNoEof(stream.read()), stream);
